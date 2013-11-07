@@ -45,11 +45,7 @@
 			<artifactId>stompjms-client</artifactId>
 			<version>1.13</version>
 		</dependency>
-		<dependency>
-			<groupId>org.codehaus.stomp</groupId>
-			<artifactId>stompconnect</artifactId>
-			<version>1.0</version>
-		</dependency>
+		
 		<dependency>
     <groupId>org.json</groupId>
     <artifactId>json</artifactId>
