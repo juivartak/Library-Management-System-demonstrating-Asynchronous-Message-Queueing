@@ -1,5 +1,16 @@
 package edu.sjsu.cmpe.procurement;
 
+
+import java.util.ArrayList;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+
+import org.quartz.SimpleScheduleBuilder;
+
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,11 +19,16 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 
 import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
+import edu.sjsu.cmpe.procurement.api.resources.ProcurementResource;
+
 
 public class ProcurementService extends Service<ProcurementServiceConfiguration> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    public static ArrayList<String> booksInQueue = new ArrayList <String>();
+    protected Scheduler scheduler;
+    
     public static void main(String[] args) throws Exception {
 	new ProcurementService().run(args);
     }
@@ -25,10 +41,16 @@ public class ProcurementService extends Service<ProcurementServiceConfiguration>
     @Override
     public void run(ProcurementServiceConfiguration configuration,
 	    Environment environment) throws Exception {
+    	
 	String queueName = configuration.getStompQueueName();
 	String topicName = configuration.getStompTopicName();
 	log.debug("Queue name is {}. Topic is {}", queueName, topicName);
-	// TODO: Apollo STOMP Broker URL and login
-
+	
+   JobDetail job = JobBuilder.newJob(ProcurementResource.class).build();
+	Trigger trigger = TriggerBuilder.newTrigger().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(5).repeatForever()).build();
+	Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+	scheduler.start();
+	scheduler.scheduleJob(job, trigger);
     }
 }
+

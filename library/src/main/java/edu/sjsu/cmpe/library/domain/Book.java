@@ -11,6 +11,7 @@ public class Book {
     public enum Status {
 	available("available"), checkedout("checkedout"), lost("lost");
 
+
 	private String value;
 
 	Status(String value) {

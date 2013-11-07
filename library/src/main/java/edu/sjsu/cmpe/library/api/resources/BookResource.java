@@ -23,6 +23,10 @@ import edu.sjsu.cmpe.library.dto.BookDto;
 import edu.sjsu.cmpe.library.dto.BooksDto;
 import edu.sjsu.cmpe.library.dto.LinkDto;
 import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
+import edu.sjsu.cmpe.library.LibraryService;
+
+
+import javax.jms.JMSException;
 
 @Path("/v1/books")
 @Produces(MediaType.APPLICATION_JSON)
@@ -72,7 +76,7 @@ public class BookResource {
     }
 
     @GET
-    @Path("/")
+    
     @Timed(name = "view-all-books")
     public BooksDto getAllBooks() {
 	BooksDto booksResponse = new BooksDto(bookRepository.getAllBooks());
@@ -85,9 +89,15 @@ public class BookResource {
     @Path("/{isbn}")
     @Timed(name = "update-book-status")
     public Response updateBookStatus(@PathParam("isbn") LongParam isbn,
-	    @DefaultValue("available") @QueryParam("status") Status status) {
+	    @DefaultValue("available") @QueryParam("status") Status status) throws JMSException {
 	Book book = bookRepository.getBookByISBN(isbn.get());
 	book.setStatus(status);
+	//System.out.println(""+book.getStatus());
+	if(book.getStatus()==Status.lost)
+	{
+		//System.out.println("status changed");
+		LibraryService.sendMessageToQueue(book.getIsbn());
+    }
 
 	BookDto bookResponse = new BookDto(book);
 	String location = "/books/" + book.getIsbn();
@@ -105,6 +115,6 @@ public class BookResource {
 	bookResponse.addLink(new LinkDto("create-book", "/books", "POST"));
 
 	return bookResponse;
-    }
+    } 
 }
 

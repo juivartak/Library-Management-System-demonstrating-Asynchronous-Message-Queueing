@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,7 +15,7 @@ import edu.sjsu.cmpe.library.domain.Book;
 public class BookRepository implements BookRepositoryInterface {
     /** In-memory map to store books. (Key, Value) -> (ISBN, Book) */
     private final ConcurrentHashMap<Long, Book> bookInMemoryMap;
-
+    public static ConcurrentHashMap<Long, Book> bookMap = new ConcurrentHashMap<Long, Book>();
     /** Never access this key directly; instead use generateISBNKey() */
     private long isbnKey;
 
@@ -24,7 +25,7 @@ public class BookRepository implements BookRepositoryInterface {
     }
 
     private ConcurrentHashMap<Long, Book> seedData(){
-	ConcurrentHashMap<Long, Book> bookMap = new ConcurrentHashMap<Long, Book>();
+	//ConcurrentHashMap<Long, Book> bookMap = new ConcurrentHashMap<Long, Book>();
 	Book book = new Book();
 	book.setIsbn(1);
 	book.setCategory("computer");
@@ -56,24 +57,27 @@ public class BookRepository implements BookRepositoryInterface {
      * 
      * @return a new incremental ISBN number
      */
-    private final Long generateISBNKey() {
+    /*private final Long generateISBNKey() {
 	// increment existing isbnKey and return the new value
 	return Long.valueOf(++isbnKey);
-    }
+    }*/
 
     /**
      * This will auto-generate unique ISBN for new books.
      */
-    @Override
+    
     public Book saveBook(Book newBook) {
 	checkNotNull(newBook, "newBook instance must not be null");
 	// Generate new ISBN
-	Long isbn = generateISBNKey();
+	//System.out.println("inside savebook");
+	Long isbn = newBook.getIsbn();
 	newBook.setIsbn(isbn);
+	
 	// TODO: create and associate other fields such as author
 
 	// Finally, save the new book into the map
-	bookInMemoryMap.putIfAbsent(isbn, newBook);
+	//bookMap.put(isbn, newBook);
+	bookMap.putIfAbsent(isbn, newBook);
 
 	return newBook;
     }
@@ -90,7 +94,8 @@ public class BookRepository implements BookRepositoryInterface {
 
     @Override
     public List<Book> getAllBooks() {
-	return new ArrayList<Book>(bookInMemoryMap.values());
+    	
+    	return new ArrayList<Book>(bookInMemoryMap.values());
     }
 
     /*
@@ -104,6 +109,11 @@ public class BookRepository implements BookRepositoryInterface {
     @Override
     public void delete(Long isbn) {
 	bookInMemoryMap.remove(isbn);
+    }
+    
+    public int hashSize()
+    {
+    	return bookInMemoryMap.size();
     }
 
 }
